@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>app view</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <h1>Analyze Your Variety Data Here</h1>
+    <form action="/Upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" />
+      <label for="analysis">Select Analysis Method:</label>
+      <select id="analysis" name="visualization_method">
+        <option value="UPGMA">UPGMA</option>
+        <option value="neighbor_joining">Neighbor Joining</option>
+      </select>
+      <br />
+      <input type="submit" value="Upload" />
+    </form>
+  </body>
+</html>

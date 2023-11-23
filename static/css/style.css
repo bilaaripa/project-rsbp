@@ -1,0 +1,74 @@
+/* Reset beberapa gaya default agar tampilan lebih konsisten */
+body,
+h1,
+form {
+  margin: 0;
+  padding: 0;
+}
+
+/* Atur tampilan latar belakang dan jenis huruf */
+body {
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  color: #333;
+}
+
+/* Gaya formulir */
+form {
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+/* Gaya tombol Upload */
+input[type="submit"] {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px; /* Menaikkan tombol Upload */
+}
+
+/* Gaya pilihan analisis */
+select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Gaya label untuk pilihan analisis */
+label {
+  display: block;
+  text-align: left;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Gaya tombol unggah file */
+input[type="file"] {
+  padding: 5px;
+  margin-top: 10px;
+}
+
+/* Gaya tautan yang sesuai */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Gaya tautan yang sesuai saat dihover */
+a:hover {
+  text-decoration: underline;
+}
