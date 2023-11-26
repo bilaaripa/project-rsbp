@@ -24,8 +24,6 @@ def upload():
     dataset_file = request.files.get('file')
     visualization_method = request.form.get('visualization_method')
 
-    print(visualization_method)
-
     if dataset_file and dataset_file.filename.endswith('.csv'):
         # Dapatkan timestamp untuk disertakan dalam nama file
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -37,22 +35,22 @@ def upload():
         varietieslist = df['N'].tolist()
         df.drop('N', axis=1, inplace=True)
         
-        os.remove(filename)
-        
         # create matrix varieties
-        columns = list(df)
-        rows = list(df.index)
-        varieties = [[] for _ in rows]
+        columns   = list(df)
+        rows      = list(df.index)
+
+        varieties   =   [];
 
         for i in rows:
             k = 0
+            varieties.append([])
 
-        for j in range(len(columns)):
-            if k % 2 == 0:
-                lc1 = df[columns[j]][i]
-                lc2 = df[columns[j + 1]][i]
-                varieties[i].append([lc1, lc2])
-            k += 1
+            for j in range(len(columns)):
+                if k%2 == 0 :
+                    lc1 = df[columns[j]][i]
+                    lc2 = df[columns[j+1]][i]
+                    varieties[i].append([lc1, lc2])
+                k+=1
     
         # create smlist
         ploidy = 2
@@ -61,8 +59,7 @@ def upload():
         kolom = 0
         smlist = []
         index = 0
-        matrixrange = 2 * locus
-        
+
         for i in range(105):
             content = 0
             mllist = []
@@ -74,30 +71,31 @@ def upload():
             for j in varieties[kolom]:
                 ml = 0
                 if j[0] in varieties[baris][content]:
-                    ml += 1
+                    ml+=1
 
                 if j[1] in varieties[baris][content]:
-                    ml += 1
+                    ml+=1
 
-                mlphy = ml / ploidy
+                mlphy = ml/ploidy
                 mllist.append(mlphy)
 
-                content += 1
+                content+=1
 
             totalml = sum(mllist)
-            sm = 1 - ((1 / locus) * totalml)
+            sm = 1-((1/locus)*totalml)
             smlist[index].append(sm)
 
-            baris += 1
-            mlindex += 1
+            baris+=1
+            mlindex+=1
             if baris > 14:
-                kolom += 1
-                baris = kolom + 1
-                index += 1
+                kolom+=1
+                baris = kolom+1
+                index+=1
 
                 if i < 104:
                     smlist.append([])
         
+        # print(smlist)
         # create distancematrix
         distancematrix = []
         r = 0
@@ -116,18 +114,21 @@ def upload():
                 elif j < rnol:
                     if j == 0:
                         distancematrix[r].append(smlist[0][c1])
-                        c1 += 1
-                        c2 -= 1
+                        c1+=1
+                        c2-=1
                     else:
-                        c2 -= 1
+                        c2-=1
                         distancematrix[r].append(smlist[j][c2])
                 else:
                     distancematrix[r].append(smlist[i][c])
+                    c+=1
 
-            c = 0
-            r += 1
-            rnol += 1
+            c=0
+            r+=1
+            rnol+=1
 
+        # print(distancematrix)
+        
         # Tentukan path lengkap untuk menyimpan file di /static/img
         if visualization_method == 'UPGMA':
             # Lakukan visualisasi Dendogram UPGMA
