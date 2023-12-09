@@ -10,11 +10,22 @@ from matplotlib import pyplot as plt
 import biotite.sequence.phylo as phylo
 import biotite.sequence.graphics as graphics
 from datetime import datetime
+import plotly.express as px
+from dash import Dash, dcc, html, Input, Output, callback
+import dash_bio as dashbio
+from scipy.cluster.hierarchy import linkage, leaves_list
+# import upgma
+
 
 app = Flask(__name__)
+# dash_app = Dash(__name__, server=app, url_base_pathname='/dash/')
 
 # Create View
 @app.route('/')
+def welcome():
+    return render_template("welcome.html")
+
+@app.route('/index')
 def index():
     return render_template("index.html")
 
@@ -28,10 +39,14 @@ def upload():
         # Dapatkan timestamp untuk disertakan dalam nama file
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        filename = secure_filename(dataset_file.filename)
-        dataset_file.save(filename)
+        csv_folder = os.path.join("static", "csv")
+        os.makedirs(csv_folder, exist_ok=True)  # Buat folder jika belum ada
+        csv_path = os.path.join(csv_folder, f'dataset_{timestamp}.csv')
+        dataset_file.save(csv_path)
 
-        df = pd.read_csv(filename)
+        print(f"File CSV berhasil disimpan di: {csv_path}")
+        
+        df = pd.read_csv(csv_path)
         varietieslist = df['N'].tolist()
         df.drop('N', axis=1, inplace=True)
         
@@ -141,11 +156,16 @@ def upload():
             # Tentukan path lengkap untuk menyimpan file di /static/img
             image_path_upgma = f'static/img/dendrogram_upgma_{timestamp}.png'
             fig.savefig(image_path_upgma)
+
+            saved_tree = tree
+
             plt.clf()  # Clear plot
+
+            print(saved_tree)
 
             # Visualisasi dash UPGMA
             # Menampilkan Hasil Akhir
-            return render_template("vizresult.html", metode_option="UPGMA", image_path=image_path_upgma)
+            return render_template("vizresult.html", metode_option="UPGMA", image_path=image_path_upgma, tree=saved_tree)
 
         elif visualization_method == 'neighbor_joining':
             # Lakukan visualisasi Dendogram Neighbor Joining
@@ -169,6 +189,79 @@ def upload():
 
     else:
         return "No file uploaded."
+
+distancematrix = [
+    [0, 0.6052631578947368, 0.5263157894736843, 0.6710526315789473, 0.5131578947368421, 0.6710526315789473, 0.6578947368421053, 0.5, 0.6973684210526316, 0.6052631578947368, 0.6052631578947368, 0.5921052631578947, 0.5789473684210527, 0.6842105263157895, 0.6578947368421053],
+    [0.6052631578947368, 0, 0.5657894736842106, 0.5394736842105263, 0.5131578947368421, 0.6447368421052632, 0.618421052631579, 0.4078947368421053, 0.7105263157894737, 0.6710526315789473, 0.6973684210526316, 0.7236842105263158, 0.7105263157894737, 0.7236842105263158, 0.6447368421052632],
+    [0.5263157894736843, 0.5657894736842106, 0, 0.368421052631579, 0.631578947368421, 0.5789473684210527, 0.618421052631579, 0.6710526315789473, 0.6578947368421053, 0.35526315789473684, 0.42105263157894735, 0.38157894736842113, 0.3421052631578948, 0.4078947368421053, 0.6447368421052632],
+    [0.6710526315789473, 0.5394736842105263, 0.368421052631579, 0, 0.5789473684210527, 0.5921052631578947, 0.5394736842105263, 0.6710526315789473, 0.5263157894736843, 0.5394736842105263, 0.5921052631578947, 0.48684210526315796, 0.4736842105263158, 0.4605263157894737, 0.6578947368421053],
+    [0.5131578947368421, 0.5131578947368421, 0.631578947368421, 0.5789473684210527, 0, 0.5263157894736843, 0.5394736842105263, 0.48684210526315796, 0.736842105263158, 0.6447368421052632, 0.7631578947368421, 0.6710526315789473, 0.631578947368421, 0.7236842105263158, 0.6578947368421053],
+    [0.6710526315789473, 0.6447368421052632, 0.5789473684210527, 0.5921052631578947, 0.5263157894736843, 0, 0.631578947368421, 0.6842105263157895, 0.7105263157894737, 0.5526315789473685, 0.631578947368421, 0.5263157894736843, 0.4605263157894737, 0.5921052631578947, 0.75],
+    [0.6578947368421053, 0.618421052631579, 0.618421052631579, 0.5394736842105263, 0.5394736842105263, 0.631578947368421, 0, 0.368421052631579, 0.5394736842105263, 0.5526315789473685, 0.5263157894736843, 0.5263157894736843, 0.5921052631578947, 0.6052631578947368, 0.6052631578947368],
+    [0.5, 0.4078947368421053, 0.6710526315789473, 0.6710526315789473, 0.48684210526315796, 0.6842105263157895, 0.368421052631579, 0, 0.5921052631578947, 0.5263157894736843, 0.6052631578947368, 0.631578947368421, 0.6842105263157895, 0.631578947368421, 0.618421052631579],
+    [0.6973684210526316, 0.7105263157894737, 0.6578947368421053, 0.5263157894736843, 0.736842105263158, 0.7105263157894737, 0.5394736842105263, 0.5921052631578947, 0, 0.4605263157894737, 0.4605263157894737, 0.5657894736842106, 0.6052631578947368, 0.5394736842105263, 0.7105263157894737],
+    [0.6052631578947368, 0.6710526315789473, 0.35526315789473684, 0.5394736842105263, 0.6447368421052632, 0.5526315789473685, 0.5526315789473685, 0.5263157894736843, 0.4605263157894737, 0, 0.21052631578947367, 0.1842105263157895, 0.3157894736842106, 0.2894736842105263, 0.618421052631579],
+    [0.6052631578947368, 0.6973684210526316, 0.42105263157894735, 0.5921052631578947, 0.7631578947368421, 0.631578947368421, 0.5263157894736843, 0.6052631578947368, 0.4605263157894737, 0.21052631578947367, 0, 0.25, 0.4078947368421053, 0.35526315789473684, 0.5526315789473685],
+    [0.5921052631578947, 0.7236842105263158, 0.38157894736842113, 0.48684210526315796, 0.6710526315789473, 0.5263157894736843, 0.5263157894736843, 0.631578947368421, 0.5657894736842106, 0.1842105263157895, 0.25, 0, 0.1842105263157895, 0.26315789473684215, 0.5657894736842106],
+    [0.5789473684210527, 0.7105263157894737, 0.3421052631578948, 0.4736842105263158, 0.631578947368421, 0.4605263157894737, 0.5921052631578947, 0.6842105263157895, 0.6052631578947368, 0.3157894736842106, 0.4078947368421053, 0.1842105263157895, 0, 0.2763157894736843, 0.618421052631579],
+    [0.6842105263157895, 0.7236842105263158, 0.4078947368421053, 0.4605263157894737, 0.7236842105263158, 0.5921052631578947, 0.6052631578947368, 0.631578947368421, 0.5394736842105263, 0.2894736842105263, 0.35526315789473684, 0.26315789473684215, 0.2763157894736843, 0, 0.5],
+    [0.6578947368421053, 0.6447368421052632, 0.6447368421052632, 0.6578947368421053, 0.6578947368421053, 0.75, 0.6052631578947368, 0.618421052631579, 0.7105263157894737, 0.618421052631579, 0.5526315789473685, 0.5657894736842106, 0.618421052631579, 0.5, 0]
+]
+
+# List of varieties
+varietieslist = [
+    "UPCA", "Mandau", "Numbu", "Kawali", "Super 1", "Super 2", "Suri 3", "Suri 4",
+    "Soper 6", "Soper 7", "Soper 9", "Biougma 1", "Biougma 2", "Biougma 3", "Samurai 2"
+]
+
+# Convert the distance matrix to a Pandas DataFrame
+df = pd.DataFrame(distancematrix, columns=varietieslist, index=varietieslist)
+
+# Create dendrogram data using UPGMA clustering
+dendro_data = linkage(df.values, method='average')  # UPGMA clustering
+dendro_leaves = leaves_list(dendro_data)
+
+app_dash = Dash(__name__, server=app, url_base_pathname='/dashboard/')    
+app_dash.layout = html.Div([
+    "Rows to display",
+    dcc.Dropdown(
+        id='my-default-clustergram-input',
+        options=[
+            {'label': var, 'value': i} for i, var in enumerate(varietieslist)
+        ],
+        value=list(range(15)),
+        multi=True
+    ),
+    html.Div(id='my-default-clustergram')
+])
+
+@callback(
+    Output('my-default-clustergram', 'children'),
+    Input('my-default-clustergram-input', 'value')
+)
+
+def update_clustergram(rows):
+    if len(rows) < 2:
+        return "Please select at least two rows to display."
+
+    return dcc.Graph(figure=dashbio.Clustergram(
+        data=df.loc[varietieslist].values[dendro_leaves][:, dendro_leaves],  # Apply dendrogram order to the data
+        column_labels=[varietieslist[i] for i in dendro_leaves],  # Reorder column labels
+        row_labels=[varietieslist[i] for i in dendro_leaves],  # Reorder row labels
+        color_threshold={
+            'row': 250,
+            'col': 700
+        },
+        hidden_labels='row',
+        height=800,
+        width=700
+))
+
+
+@app.route('/dash')
+def dash():
+    return app_dash.index()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
