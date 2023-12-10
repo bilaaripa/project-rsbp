@@ -4,7 +4,6 @@ from flask import Flask, render_template, request
 from flask_wtf import FlaskForm
 from wtforms import FileField
 from werkzeug.utils import secure_filename
-from varietas import varietas
 import numpy as np
 from matplotlib import pyplot as plt
 import biotite.sequence.phylo as phylo
@@ -16,9 +15,15 @@ import dash_bio as dashbio
 from scipy.cluster.hierarchy import linkage, leaves_list
 # import upgma
 
-
 app = Flask(__name__)
 # dash_app = Dash(__name__, server=app, url_base_pathname='/dash/')
+
+dmatrix = []
+vlist = []
+dendro_leaves = ()
+df = 0
+visualization_method = "none"
+neighbor_joining_tree = 0
 
 # Create View
 @app.route('/')
@@ -32,6 +37,7 @@ def index():
 # nyoba nyoba masih belum bisa
 @app.route("/Upload", methods=['POST'])
 def upload():
+    global visualization_method
     dataset_file = request.files.get('file')
     visualization_method = request.form.get('visualization_method')
 
@@ -48,13 +54,15 @@ def upload():
         
         df = pd.read_csv(csv_path)
         varietieslist = df['N'].tolist()
+        global vlist 
+        vlist = varietieslist
         df.drop('N', axis=1, inplace=True)
         
         # create matrix varieties
         columns   = list(df)
         rows      = list(df.index)
 
-        varieties   =   [];
+        varieties   =  [];
 
         for i in rows:
             k = 0
@@ -113,6 +121,7 @@ def upload():
         # print(smlist)
         # create distancematrix
         distancematrix = []
+        global dmatrix
         r = 0
         c = 0
         r1 = 0
@@ -142,7 +151,7 @@ def upload():
             r+=1
             rnol+=1
 
-        # print(distancematrix)
+        dmatrix = distancematrix
         
         # Tentukan path lengkap untuk menyimpan file di /static/img
         if visualization_method == 'UPGMA':
@@ -190,44 +199,14 @@ def upload():
     else:
         return "No file uploaded."
 
-distancematrix = [
-    [0, 0.6052631578947368, 0.5263157894736843, 0.6710526315789473, 0.5131578947368421, 0.6710526315789473, 0.6578947368421053, 0.5, 0.6973684210526316, 0.6052631578947368, 0.6052631578947368, 0.5921052631578947, 0.5789473684210527, 0.6842105263157895, 0.6578947368421053],
-    [0.6052631578947368, 0, 0.5657894736842106, 0.5394736842105263, 0.5131578947368421, 0.6447368421052632, 0.618421052631579, 0.4078947368421053, 0.7105263157894737, 0.6710526315789473, 0.6973684210526316, 0.7236842105263158, 0.7105263157894737, 0.7236842105263158, 0.6447368421052632],
-    [0.5263157894736843, 0.5657894736842106, 0, 0.368421052631579, 0.631578947368421, 0.5789473684210527, 0.618421052631579, 0.6710526315789473, 0.6578947368421053, 0.35526315789473684, 0.42105263157894735, 0.38157894736842113, 0.3421052631578948, 0.4078947368421053, 0.6447368421052632],
-    [0.6710526315789473, 0.5394736842105263, 0.368421052631579, 0, 0.5789473684210527, 0.5921052631578947, 0.5394736842105263, 0.6710526315789473, 0.5263157894736843, 0.5394736842105263, 0.5921052631578947, 0.48684210526315796, 0.4736842105263158, 0.4605263157894737, 0.6578947368421053],
-    [0.5131578947368421, 0.5131578947368421, 0.631578947368421, 0.5789473684210527, 0, 0.5263157894736843, 0.5394736842105263, 0.48684210526315796, 0.736842105263158, 0.6447368421052632, 0.7631578947368421, 0.6710526315789473, 0.631578947368421, 0.7236842105263158, 0.6578947368421053],
-    [0.6710526315789473, 0.6447368421052632, 0.5789473684210527, 0.5921052631578947, 0.5263157894736843, 0, 0.631578947368421, 0.6842105263157895, 0.7105263157894737, 0.5526315789473685, 0.631578947368421, 0.5263157894736843, 0.4605263157894737, 0.5921052631578947, 0.75],
-    [0.6578947368421053, 0.618421052631579, 0.618421052631579, 0.5394736842105263, 0.5394736842105263, 0.631578947368421, 0, 0.368421052631579, 0.5394736842105263, 0.5526315789473685, 0.5263157894736843, 0.5263157894736843, 0.5921052631578947, 0.6052631578947368, 0.6052631578947368],
-    [0.5, 0.4078947368421053, 0.6710526315789473, 0.6710526315789473, 0.48684210526315796, 0.6842105263157895, 0.368421052631579, 0, 0.5921052631578947, 0.5263157894736843, 0.6052631578947368, 0.631578947368421, 0.6842105263157895, 0.631578947368421, 0.618421052631579],
-    [0.6973684210526316, 0.7105263157894737, 0.6578947368421053, 0.5263157894736843, 0.736842105263158, 0.7105263157894737, 0.5394736842105263, 0.5921052631578947, 0, 0.4605263157894737, 0.4605263157894737, 0.5657894736842106, 0.6052631578947368, 0.5394736842105263, 0.7105263157894737],
-    [0.6052631578947368, 0.6710526315789473, 0.35526315789473684, 0.5394736842105263, 0.6447368421052632, 0.5526315789473685, 0.5526315789473685, 0.5263157894736843, 0.4605263157894737, 0, 0.21052631578947367, 0.1842105263157895, 0.3157894736842106, 0.2894736842105263, 0.618421052631579],
-    [0.6052631578947368, 0.6973684210526316, 0.42105263157894735, 0.5921052631578947, 0.7631578947368421, 0.631578947368421, 0.5263157894736843, 0.6052631578947368, 0.4605263157894737, 0.21052631578947367, 0, 0.25, 0.4078947368421053, 0.35526315789473684, 0.5526315789473685],
-    [0.5921052631578947, 0.7236842105263158, 0.38157894736842113, 0.48684210526315796, 0.6710526315789473, 0.5263157894736843, 0.5263157894736843, 0.631578947368421, 0.5657894736842106, 0.1842105263157895, 0.25, 0, 0.1842105263157895, 0.26315789473684215, 0.5657894736842106],
-    [0.5789473684210527, 0.7105263157894737, 0.3421052631578948, 0.4736842105263158, 0.631578947368421, 0.4605263157894737, 0.5921052631578947, 0.6842105263157895, 0.6052631578947368, 0.3157894736842106, 0.4078947368421053, 0.1842105263157895, 0, 0.2763157894736843, 0.618421052631579],
-    [0.6842105263157895, 0.7236842105263158, 0.4078947368421053, 0.4605263157894737, 0.7236842105263158, 0.5921052631578947, 0.6052631578947368, 0.631578947368421, 0.5394736842105263, 0.2894736842105263, 0.35526315789473684, 0.26315789473684215, 0.2763157894736843, 0, 0.5],
-    [0.6578947368421053, 0.6447368421052632, 0.6447368421052632, 0.6578947368421053, 0.6578947368421053, 0.75, 0.6052631578947368, 0.618421052631579, 0.7105263157894737, 0.618421052631579, 0.5526315789473685, 0.5657894736842106, 0.618421052631579, 0.5, 0]
-]
-
-# List of varieties
-varietieslist = [
-    "UPCA", "Mandau", "Numbu", "Kawali", "Super 1", "Super 2", "Suri 3", "Suri 4",
-    "Soper 6", "Soper 7", "Soper 9", "Biougma 1", "Biougma 2", "Biougma 3", "Samurai 2"
-]
-
-# Convert the distance matrix to a Pandas DataFrame
-df = pd.DataFrame(distancematrix, columns=varietieslist, index=varietieslist)
-
-# Create dendrogram data using UPGMA clustering
-dendro_data = linkage(df.values, method='average')  # UPGMA clustering
-dendro_leaves = leaves_list(dendro_data)
-
 app_dash = Dash(__name__, server=app, url_base_pathname='/dashboard/')    
+
 app_dash.layout = html.Div([
     "Rows to display",
     dcc.Dropdown(
         id='my-default-clustergram-input',
         options=[
-            {'label': var, 'value': i} for i, var in enumerate(varietieslist)
+            {'label': var, 'value': i} for i, var in enumerate(vlist)
         ],
         value=list(range(15)),
         multi=True
@@ -241,27 +220,125 @@ app_dash.layout = html.Div([
 )
 
 def update_clustergram(rows):
+    global dmatrix
+    global vlist
+    global dendro_leaves
+    global visualization_method
+    global neighbor_joining_tree
+    
     if len(rows) < 2:
         return "Please select at least two rows to display."
+    
+    if visualization_method == "UPGMA":
+        return dcc.Graph(figure=dashbio.Clustergram(
+            data=df.loc[vlist].values[dendro_leaves][:, dendro_leaves],  # Apply dendrogram order to the data
+            column_labels=[vlist[i] for i in dendro_leaves],  # Reorder column labels
+            row_labels=[vlist[i] for i in dendro_leaves],  # Reorder row labels
+            color_threshold={
+                'row': 250,
+                'col': 700
+            },
+            hidden_labels='row',
+            height=800,
+            width=700
+        ))
+        
+    elif visualization_method == "neighbor_joining":
+        return dcc.Graph(figure=dashbio.Clustergram(
+            data=dmatrix,
+            column_labels=vlist,
+            row_labels=vlist,
+            color_threshold={
+                'row': 250,
+                'col': 700
+            },
+            hidden_labels='row',
+            height=800,
+            width=700,
+            tree=neighbor_joining_tree
+        ))
 
-    return dcc.Graph(figure=dashbio.Clustergram(
-        data=df.loc[varietieslist].values[dendro_leaves][:, dendro_leaves],  # Apply dendrogram order to the data
-        column_labels=[varietieslist[i] for i in dendro_leaves],  # Reorder column labels
-        row_labels=[varietieslist[i] for i in dendro_leaves],  # Reorder row labels
-        color_threshold={
-            'row': 250,
-            'col': 700
-        },
-        hidden_labels='row',
-        height=800,
-        width=700
-))
+# Helper function to calculate the neighbor joining tree
+def neighbor_joining(dm, names):
+    n = len(dm)
+    if n != len(names):
+        return None
+
+    def min_element(matrix):
+        min_val = float("inf")
+        min_i, min_j = -1, -1
+        for i in range(len(matrix)):
+            for j in range(i+1, len(matrix[i])):
+                if matrix[i][j] < min_val:
+                    min_val = matrix[i][j]
+                    min_i, min_j = i, j
+        return min_i, min_j
+
+    def add_new_node(dm, node_name, indices):
+        n = len(dm)
+        new_dm = np.zeros((n + 1, n + 1))
+        new_names = names + [node_name]
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                if i in indices and j in indices:
+                    new_dm[n][i] = (n - 2) * dm[i][j] + sum(dm[i][k] for k in indices if k != i) + sum(
+                        dm[j][k] for k in indices if k != j)
+                    new_dm[i][n] = new_dm[n][i]
+                else:
+                    new_dm[i][n] = (dm[i][j] + dm[i][j]) / 2
+                    new_dm[n][i] = new_dm[i][n]
+
+        return new_dm, new_names
+
+    tree = []
+    while n > 2:
+        i, j = min_element(dm)
+        new_node = f'({names[i]}, {names[j]})'
+        tree.append(new_node)
+
+        dm, names = add_new_node(dm, new_node, [i, j])
+        n = len(dm)
+
+    tree.append(f'({names[0]}, {names[1]})')
+    return tree[0]
 
 
 @app.route('/dash')
-def dash():
+def dash():   
+    global vlist
+    global dmatrix
+    global dendro_leaves
+    global df
+    global visualization_method
+    global neighbor_joining_tree
+    
+    if visualization_method == "neighbor_joining":
+        # Calculate the neighbor joining tree
+        neighbor_joining_tree = neighbor_joining(dmatrix, vlist)
+        
+    elif visualization_method == "UPGMA":
+        # Convert the distance matrix to a Pandas DataFrame
+        df = pd.DataFrame(dmatrix, columns=vlist, index=vlist)
+        
+        # Create dendrogram data using UPGMA clustering
+        dendro_data = linkage(df.values, method='average')  # UPGMA clustering
+        dendro_leaves = leaves_list(dendro_data)
+    
+    app_dash.layout = html.Div([
+        "Rows to display",
+        dcc.Dropdown(
+            id='my-default-clustergram-input',
+            options=[
+                {'label': var, 'value': i} for i, var in enumerate(vlist)
+            ],
+            value=list(range(15)),
+            multi=True
+        ),
+        html.Div(id='my-default-clustergram')
+    ])
+    
     return app_dash.index()
-
 
 if __name__ == "__main__":
     app.run(debug=True)
