@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dash Visualization</title>
+    <!-- Add any additional styles or scripts here -->
+  </head>
+  <body>
+    <h1>Dash Visualization</h1>
+
+    <div id="my-dash-plot"></div>
+
+    <!-- Include the necessary Dash libraries -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/dash/dash-latest.min.js"></script>
+
+    <!-- Embed your Dash app into the HTML -->
+    <script>
+      // Your Dash app script here
+      // For example, you can use a script tag to define your Dash components
+      // Ensure that the IDs match your Dash app
+      document.addEventListener("DOMContentLoaded", function () {
+        DashApp.dash_update_plot(); // Replace with your Dash app's function to update the plot
+      });
+    </script>
+  </body>
+</html>
