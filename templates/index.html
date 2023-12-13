@@ -4,6 +4,100 @@
     <meta charset="UTF-8" />
     <title>app view</title>
     <link rel="stylesheet" href="/static/css/style.css" />
+    <style>
+      /* Reset beberapa gaya default agar tampilan lebih konsisten */
+      body,
+      h1,
+      form {
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Atur tampilan latar belakang dan jenis huruf */
+      body {
+        background-color: #83a2ce;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+
+      h1 {
+        color: #fff;
+      }
+
+      /* Gaya formulir */
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+        width: 1217px;
+        height: 500px;
+      }
+
+      /* Gaya tombol Upload */
+      input[type="submit"] {
+        background-color: #3f69aa;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        margin-top: 80px; /* Menaikkan tombol Upload */
+
+        /* Mengatur ukuran tombol */
+        width: 200px;
+        height: 50px;
+
+        /* Mengatur letak tombol ke tengah */
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+
+        /* Mengatur ukuran teks */
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      /* Gaya select */
+      select {
+        padding: 15px; /* Memperbesar padding */
+        border: 1px solid #ccc;
+        border-radius: 10px; /* Memperbesar border-radius */
+        width: 100%;
+        margin-top: 20px;
+        font-size: 16px; /* Memperbesar ukuran teks */
+      }
+
+      /* Gaya label untuk pilihan analisis */
+      label {
+        display: block;
+        text-align: left;
+        margin-top: 50px; /* Mengurangi margin-top agar label tidak terlalu jauh dari select */
+        font-weight: bold;
+        font-size: 18px; /* Memperbesar ukuran teks */
+      }
+
+      /* Gaya tombol unggah file */
+      input[type="file"] {
+        padding: 10px;
+        margin-top: 80px;
+        font-size: 16px;
+      }
+
+      /* Gaya tautan yang sesuai */
+      a {
+        color: #3f69aa;
+        text-decoration: none;
+      }
+
+      /* Gaya tautan yang sesuai saat dihover */
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
   <body>
     <h1>Analyze Your Variety Data Here</h1>

@@ -5,12 +5,44 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Result</title>
+    <style>
+            .download-button, .view {
+        /* position: absolute; */
+        top: 50%;
+        left: 50%;
+        /* transform: translate(-50%, -50%); */
+        background-color: #3f69aa;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      p {
+        text-align: center;
+      }
+      h1, img {
+        text-align: center;
+        display: block;
+        margin: 0 auto;
+      }
+
+    </style>
   </head>
   <body>
-    <p>
-      File uploaded successfully. View the visualization
-      <h1>Visualisasi Dendrogram dengan metode {{ metode_option }}</h1>
-      <img src="{{image_path}}" alt="Gambar" width="700" height="400"><!-- Ubah ukuran sesuai kebutuhan -->
-    </p>
+    <div>
+      <p>
+        File uploaded successfully. View the visualization
+        <h1>Visualisasi Dendrogram dengan metode {{ metode_option }}</h1>
+        <img src="{{image_path}}" alt="Gambar" width="700" height="400"><!-- Ubah ukuran sesuai kebutuhan -->
+      </p>
+    </div>
+    <div>
+      <button class="download-button" onclick="downloadImage('{{ image_path }}')">Download Gambar</button>
+      <button onclick="window.location.href='/dash'" class="view">View Dash</button>    
+    </div>
+    <script src="{{ url_for('static', filename='js/download.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dash') }}"></script>
   </body>
 </html>
