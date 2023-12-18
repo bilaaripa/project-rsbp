@@ -24,6 +24,7 @@ dendro_leaves = ()
 df = 0
 visualization_method = "none"
 neighbor_joining_tree = 0
+buffer = 1
 
 # Create View
 @app.route('/')
@@ -118,7 +119,6 @@ def upload():
                 if i < 104:
                     smlist.append([])
         
-        # print(smlist)
         # create distancematrix
         distancematrix = []
         global dmatrix
@@ -170,13 +170,11 @@ def upload():
 
             plt.clf()  # Clear plot
 
-            print(saved_tree)
-
-            # Visualisasi dash UPGMA
             # Menampilkan Hasil Akhir
             return render_template("vizresult.html", metode_option="UPGMA", image_path=image_path_upgma, tree=saved_tree)
 
         elif visualization_method == 'neighbor_joining':
+            dmatrix = distancematrix
             # Lakukan visualisasi Dendogram Neighbor Joining
             distances = np.array(distancematrix)
             tree = phylo.neighbor_joining(distances)
@@ -189,7 +187,6 @@ def upload():
             fig.savefig(image_path_neighbor_joining)
             plt.clf()  # Clear plot
 
-            # Visualisasi dash Neighbor Joining
             # Menampilkan Hasil Akhir
             return render_template("vizresult.html", metode_option="Neighbor Joining", image_path=image_path_neighbor_joining)
 
@@ -229,80 +226,19 @@ def update_clustergram(rows):
     if len(rows) < 2:
         return "Please select at least two rows to display."
     
-    if visualization_method == "UPGMA":
-        return dcc.Graph(figure=dashbio.Clustergram(
-            data=df.loc[vlist].values[dendro_leaves][:, dendro_leaves],  # Apply dendrogram order to the data
-            column_labels=[vlist[i] for i in dendro_leaves],  # Reorder column labels
-            row_labels=[vlist[i] for i in dendro_leaves],  # Reorder row labels
-            color_threshold={
-                'row': 250,
-                'col': 700
-            },
-            hidden_labels='row',
-            height=800,
-            width=700
-        ))
+    return dcc.Graph(figure=dashbio.Clustergram(
+        data=df.loc[vlist].values[dendro_leaves][:, dendro_leaves],  # Apply dendrogram order to the data
+        column_labels=[vlist[i] for i in dendro_leaves],  # Reorder column labels
+        row_labels=[vlist[i] for i in dendro_leaves],  # Reorder row labels
+        color_threshold={
+            'row': 700,
+            'col': 700
+        },
+        hidden_labels='row',
+        height=800,
+        width=1000
+    ))
         
-    elif visualization_method == "neighbor_joining":
-        return dcc.Graph(figure=dashbio.Clustergram(
-            data=dmatrix,
-            column_labels=vlist,
-            row_labels=vlist,
-            color_threshold={
-                'row': 250,
-                'col': 700
-            },
-            hidden_labels='row',
-            height=800,
-            width=700,
-            tree=neighbor_joining_tree
-        ))
-
-# Helper function to calculate the neighbor joining tree
-def neighbor_joining(dm, names):
-    n = len(dm)
-    if n != len(names):
-        return None
-
-    def min_element(matrix):
-        min_val = float("inf")
-        min_i, min_j = -1, -1
-        for i in range(len(matrix)):
-            for j in range(i+1, len(matrix[i])):
-                if matrix[i][j] < min_val:
-                    min_val = matrix[i][j]
-                    min_i, min_j = i, j
-        return min_i, min_j
-
-    def add_new_node(dm, node_name, indices):
-        n = len(dm)
-        new_dm = np.zeros((n + 1, n + 1))
-        new_names = names + [node_name]
-
-        for i in range(n):
-            for j in range(i + 1, n):
-                if i in indices and j in indices:
-                    new_dm[n][i] = (n - 2) * dm[i][j] + sum(dm[i][k] for k in indices if k != i) + sum(
-                        dm[j][k] for k in indices if k != j)
-                    new_dm[i][n] = new_dm[n][i]
-                else:
-                    new_dm[i][n] = (dm[i][j] + dm[i][j]) / 2
-                    new_dm[n][i] = new_dm[i][n]
-
-        return new_dm, new_names
-
-    tree = []
-    while n > 2:
-        i, j = min_element(dm)
-        new_node = f'({names[i]}, {names[j]})'
-        tree.append(new_node)
-
-        dm, names = add_new_node(dm, new_node, [i, j])
-        n = len(dm)
-
-    tree.append(f'({names[0]}, {names[1]})')
-    return tree[0]
-
 
 @app.route('/dash')
 def dash():   
@@ -312,18 +248,15 @@ def dash():
     global df
     global visualization_method
     global neighbor_joining_tree
+    global buffer
     
-    if visualization_method == "neighbor_joining":
-        # Calculate the neighbor joining tree
-        neighbor_joining_tree = neighbor_joining(dmatrix, vlist)
-        
-    elif visualization_method == "UPGMA":
-        # Convert the distance matrix to a Pandas DataFrame
-        df = pd.DataFrame(dmatrix, columns=vlist, index=vlist)
-        
-        # Create dendrogram data using UPGMA clustering
-        dendro_data = linkage(df.values, method='average')  # UPGMA clustering
-        dendro_leaves = leaves_list(dendro_data)
+    # Convert the distance matrix to a Pandas DataFrame
+    df = pd.DataFrame(dmatrix, columns=vlist, index=vlist)
+    
+    # Create dendrogram data using UPGMA clustering
+    dendro_data = linkage(df.values, method='average')  # UPGMA clustering
+    dendro_leaves = leaves_list(dendro_data)
+    print(dendro_leaves)
     
     app_dash.layout = html.Div([
         "Rows to display",
